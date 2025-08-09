@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
@@ -70,12 +71,17 @@ func (th *TestHelper) CreateTestOrganization(t *testing.T) models.Organization {
 
 // CreateTestUser creates a test user
 func (th *TestHelper) CreateTestUser(t *testing.T, organizationID primitive.ObjectID, role string) models.User {
+	// Generate unique identifiers using test name and timestamp to avoid conflicts
+	testName := t.Name()
+	timestamp := time.Now().UnixNano()
+	uniqueID := primitive.NewObjectID().Hex()[:8]
+	
 	user := models.User{
 		ID:             primitive.NewObjectID(),
 		OrganizationID: organizationID,
-		Username:       "testuser_" + primitive.NewObjectID().Hex()[:8],
+		Username:       fmt.Sprintf("testuser_%s_%d_%s", testName, timestamp, uniqueID),
 		FullName:       "Test User",
-		Email:          "testuser_" + primitive.NewObjectID().Hex()[:8] + "@example.com",
+		Email:          fmt.Sprintf("testuser_%s_%d_%s@example.com", testName, timestamp, uniqueID),
 		Password:       "$2a$10$hashedpassword", // Pre-hashed password
 		Role:           role,
 		CreatedAt:      time.Now(),

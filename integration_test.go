@@ -167,7 +167,12 @@ func TestCompanyAdminIntegration_DuplicatePreventionWorkflow(t *testing.T) {
 	existingUser := th.CreateTestUser(t, org.ID, "user")
 
 	// Create existing company admin assignment
-	th.CreateTestCompanyAdmin(t, company.ID, existingUser.ID, org.ID, superAdmin.ID)
+	companyAdmin := th.CreateTestCompanyAdmin(t, company.ID, existingUser.ID, org.ID, superAdmin.ID)
+	
+	// Verify the company admin was created successfully
+	th.AssertCompanyAdminExists(t, company.ID, existingUser.ID)
+	t.Logf("Created company admin: ID=%s, CompanyID=%s, UserID=%s", companyAdmin.ID.Hex(), company.ID.Hex(), existingUser.ID.Hex())
+	t.Logf("Existing user details: ID=%s, Username=%s, Email=%s", existingUser.ID.Hex(), existingUser.Username, existingUser.Email)
 
 	// Setup router
 	gin.SetMode(gin.TestMode)
