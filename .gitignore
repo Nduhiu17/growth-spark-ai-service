@@ -1,0 +1,12 @@
+.env
+*.log
+*.out
+*.bin
+*.swp
+*.swo
+*.swx
+*.swp
+*.swo
+*.swx
+*.swp
+growth-spark-ai-service
