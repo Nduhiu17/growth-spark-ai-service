@@ -69,6 +69,17 @@ func main() {
 				companies.GET("/:id", handlers.GetCompany)
 				companies.PUT("/:id", handlers.UpdateCompany)
 				companies.DELETE("/:id", handlers.DeleteCompany)
+				
+				// Company admin management routes (super admin only)
+				companies.GET("/:id/admins", handlers.GetCompanyAdmins)
+			}
+
+			// Company admin management routes (separate group to avoid path conflicts)
+			companyAdmins := protected.Group("/company-admins")
+			{
+				companyAdmins.POST("/create", handlers.CreateCompanyAdmin)
+				companyAdmins.PUT("/update/:adminId", handlers.UpdateCompanyAdmin)
+				companyAdmins.DELETE("/delete/:adminId", handlers.RemoveCompanyAdmin)
 			}
 		}
 	}
