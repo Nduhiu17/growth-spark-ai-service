@@ -9,13 +9,13 @@ import (
 // Role represents a role in the system
 type Role struct {
 	ID             primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
-	OrganizationID primitive.ObjectID `bson:"organization_id" json:"organizationId"`
+	OrganizationID primitive.ObjectID `bson:"organization_id" json:"organization_id"`
 	Name           string             `bson:"name" json:"name" binding:"required"`
 	Description    string             `bson:"description" json:"description"`
 	Permissions    []string           `bson:"permissions" json:"permissions"`
-	IsSystemRole   bool               `bson:"is_system_role" json:"isSystemRole"`
-	CreatedAt      time.Time          `bson:"created_at" json:"createdAt"`
-	UpdatedAt      time.Time          `bson:"updated_at" json:"updatedAt"`
+	IsSystemRole   bool               `bson:"is_system_role" json:"is_system_role"`
+	CreatedAt      time.Time          `bson:"created_at" json:"created_at"`
+	UpdatedAt      time.Time          `bson:"updated_at" json:"updated_at"`
 }
 
 // Permission represents a permission in the system
@@ -25,7 +25,7 @@ type Permission struct {
 	Description string             `bson:"description" json:"description"`
 	Resource    string             `bson:"resource" json:"resource"`
 	Action      string             `bson:"action" json:"action"`
-	CreatedAt   time.Time          `bson:"created_at" json:"createdAt"`
+	CreatedAt   time.Time          `bson:"created_at" json:"created_at"`
 }
 
 // DefaultRoles defines the system default roles
