@@ -89,6 +89,17 @@ func main() {
 				systemManagers.GET("/company/:companyId", handlers.GetSystemManagers)
 				systemManagers.DELETE("/company/:companyId/user/:userId", handlers.RemoveSystemManager)
 			}
+
+			// Product management routes (system manager can manage products for their company)
+			products := protected.Group("/products")
+			{
+				products.POST("/create", handlers.CreateProduct)
+				products.GET("/company/:companyId", handlers.GetProducts)
+				products.GET("/:productId", handlers.GetProduct)
+				products.PUT("/:productId", handlers.UpdateProduct)
+				products.DELETE("/:productId", handlers.DeleteProduct)
+				products.GET("/stats/:companyId", handlers.GetProductStats)
+			}
 		}
 	}
 
