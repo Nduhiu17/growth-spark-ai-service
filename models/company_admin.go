@@ -110,3 +110,16 @@ type CompanyAdminResponse struct {
 	CreatedAt   time.Time          `json:"created_at"`
 	UpdatedAt   time.Time          `json:"updated_at"`
 }
+
+// CreateSystemManagerRequest represents the request payload for creating a new system manager
+type CreateSystemManagerRequest struct {
+	CompanyID   string   `json:"company_id" binding:"required"`
+	Username    string   `json:"username" binding:"required"`
+	FullName    string   `json:"full_name" binding:"required"`
+	Email       string   `json:"email" binding:"required,email"`
+	PhoneNumber string   `json:"phone_number"`
+	Password    string   `json:"password" binding:"required,min=6"`
+	Permissions []string `json:"permissions"`
+	ExpiresAt   *string  `json:"expires_at,omitempty"`
+	Notes       string   `json:"notes"`
+}

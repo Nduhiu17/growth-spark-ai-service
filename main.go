@@ -81,6 +81,14 @@ func main() {
 				companyAdmins.PUT("/update/:adminId", handlers.UpdateCompanyAdmin)
 				companyAdmins.DELETE("/delete/:adminId", handlers.RemoveCompanyAdmin)
 			}
+
+			// System manager management routes (company admin can create managers for their company)
+			systemManagers := protected.Group("/system-managers")
+			{
+				systemManagers.POST("/create", handlers.CreateSystemManager)
+				systemManagers.GET("/company/:companyId", handlers.GetSystemManagers)
+				systemManagers.DELETE("/company/:companyId/user/:userId", handlers.RemoveSystemManager)
+			}
 		}
 	}
 
