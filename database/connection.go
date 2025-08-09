@@ -18,8 +18,12 @@ var (
 // Connect establishes a connection to MongoDB
 func Connect() error {
 	mongoURI := os.Getenv("MONGO_URI")
+	// Check for test database URI if MONGO_URI is not set
 	if mongoURI == "" {
-		return fmt.Errorf("MONGO_URI environment variable not set")
+		mongoURI = os.Getenv("MONGO_TEST_URI")
+	}
+	if mongoURI == "" {
+		return fmt.Errorf("MONGO_URI or MONGO_TEST_URI environment variable not set")
 	}
 
 	serverAPIOptions := options.ServerAPI(options.ServerAPIVersion1)

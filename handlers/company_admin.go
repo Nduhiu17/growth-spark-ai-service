@@ -82,6 +82,7 @@ func CreateCompanyAdmin(c *gin.Context) {
 	
 	// If user exists, check if they're already a company admin for this company
 	if err == nil {
+		log.Printf("[COMPANY_ADMIN] Found existing user: %s, checking for duplicate assignment", targetUser.ID.Hex())
 		companyAdminDB := database.NewCompanyAdminDB()
 		exists, checkErr := companyAdminDB.ExistsByCompanyAndUser(companyID, targetUser.ID)
 		if checkErr != nil {
@@ -89,7 +90,9 @@ func CreateCompanyAdmin(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to verify company admin status"})
 			return
 		}
+		log.Printf("[COMPANY_ADMIN] Duplicate check result: exists=%v for company=%s, user=%s", exists, companyID.Hex(), targetUser.ID.Hex())
 		if exists {
+			log.Printf("[COMPANY_ADMIN] Preventing duplicate assignment for user %s in company %s", targetUser.ID.Hex(), companyID.Hex())
 			c.JSON(http.StatusConflict, gin.H{"error": "User is already a company admin for this company"})
 			return
 		}
@@ -288,6 +291,19 @@ func GetCompanyAdmins(c *gin.Context) {
 	for _, result := range results {
 		userDoc := result["user"].(bson.M)
 		
+		// Handle datetime conversion from MongoDB
+		var createdAt, updatedAt time.Time
+		if createdAtPrimitive, ok := result["created_at"].(primitive.DateTime); ok {
+			createdAt = createdAtPrimitive.Time()
+		} else if createdAtTime, ok := result["created_at"].(time.Time); ok {
+			createdAt = createdAtTime
+		}
+		if updatedAtPrimitive, ok := result["updated_at"].(primitive.DateTime); ok {
+			updatedAt = updatedAtPrimitive.Time()
+		} else if updatedAtTime, ok := result["updated_at"].(time.Time); ok {
+			updatedAt = updatedAtTime
+		}
+
 		companyAdmin := models.CompanyAdminResponse{
 			ID:          result["_id"].(primitive.ObjectID),
 			CompanyID:   companyID,
@@ -297,8 +313,8 @@ func GetCompanyAdmins(c *gin.Context) {
 			UserEmail:   userDoc["email"].(string),
 			Role:        result["role"].(string),
 			IsActive:    result["is_active"].(bool),
-			CreatedAt:   result["created_at"].(time.Time),
-			UpdatedAt:   result["updated_at"].(time.Time),
+			CreatedAt:   createdAt,
+			UpdatedAt:   updatedAt,
 		}
 
 		// Handle permissions array (might be nil)
