@@ -1,11 +1,18 @@
 package middleware
 
 import (
+	"context"
+	"log"
 	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+
 	"growth-spark-ai-service/auth"
+	"growth-spark-ai-service/database"
+	"growth-spark-ai-service/models"
 )
 
 // AuthMiddleware validates JWT tokens and adds user info to context
@@ -34,7 +41,25 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		// Add user information to context
+		// Fetch complete user object from database
+		usersCollection := database.DB.Collection("users")
+		var user models.User
+		err = usersCollection.FindOne(context.TODO(), bson.M{"_id": claims.UserID}).Decode(&user)
+		if err != nil {
+			if err == mongo.ErrNoDocuments {
+				log.Printf("[AUTH] User not found in database: %s", claims.UserID.Hex())
+				c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
+			} else {
+				log.Printf("[AUTH] Database error fetching user: %v", err)
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Authentication service error"})
+			}
+			c.Abort()
+			return
+		}
+
+		// Set complete user object in context
+		c.Set("user", user)
+		// Also set individual fields for backward compatibility
 		c.Set("user_id", claims.UserID)
 		c.Set("organization_id", claims.OrganizationID)
 		c.Set("username", claims.Username)
