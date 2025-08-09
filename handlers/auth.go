@@ -28,6 +28,7 @@ type LoginRequest struct {
 type RegisterRequest struct {
 	OrganizationName string `json:"organization_name" binding:"required"`
 	Username         string `json:"username" binding:"required"`
+	FullName         string `json:"full_name" binding:"required"`
 	Email            string `json:"email" binding:"required,email"`
 	PhoneNumber      string `json:"phone_number" binding:"required"`
 	Password         string `json:"password" binding:"required,min=6"`
@@ -155,6 +156,7 @@ func Register(c *gin.Context) {
 	user := models.User{
 		OrganizationID: orgID,
 		Username:       req.Username,
+		FullName:       req.FullName,
 		Email:          req.Email,
 		Password:       string(hashedPassword),
 		Role:           "super_admin", // Automatically assign super admin role
