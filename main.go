@@ -60,6 +60,16 @@ func main() {
 			protected.PUT("/roles/:id", middleware.RequirePermission("roles:update"), handlers.UpdateRole)
 			protected.DELETE("/roles/:id", middleware.RequirePermission("roles:delete"), handlers.DeleteRole)
 			protected.POST("/roles/assign", middleware.RequirePermission("users:update"), handlers.AssignRole)
+
+			// Company management routes (super admin only)
+			companies := protected.Group("/companies")
+			{
+				companies.POST("/", handlers.CreateCompany)
+				companies.GET("/", handlers.GetAllCompanies)
+				companies.GET("/:id", handlers.GetCompany)
+				companies.PUT("/:id", handlers.UpdateCompany)
+				companies.DELETE("/:id", handlers.DeleteCompany)
+			}
 		}
 	}
 
