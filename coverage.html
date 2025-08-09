@@ -57,7 +57,7 @@
 				
 				<option value="file0">growth-spark-ai-service/main.go (0.0%)</option>
 				
-				<option value="file1">growth-spark-ai-service/test_helpers.go (84.5%)</option>
+				<option value="file1">growth-spark-ai-service/test_helpers.go (100.0%)</option>
 				
 				</select>
 			</div>
@@ -316,7 +316,7 @@ func (th *TestHelper) CreateTestCompanyAdmin(t *testing.T, companyID, userID, or
 }</span>
 
 // CreateTestRole creates a test role
-func (th *TestHelper) CreateTestRole(t *testing.T, organizationID primitive.ObjectID, name string, permissions []string) models.Role <span class="cov0" title="0">{
+func (th *TestHelper) CreateTestRole(t *testing.T, organizationID primitive.ObjectID, name string, permissions []string) models.Role <span class="cov8" title="1">{
         role := models.Role{
                 ID:             primitive.NewObjectID(),
                 OrganizationID: organizationID,
@@ -344,7 +344,7 @@ func (th *TestHelper) AssertCompanyAdminExists(t *testing.T, companyID, userID p
 }</span>
 
 // AssertCompanyAdminNotExists verifies that a company admin does not exist with the given criteria
-func (th *TestHelper) AssertCompanyAdminNotExists(t *testing.T, companyID, userID primitive.ObjectID) <span class="cov0" title="0">{
+func (th *TestHelper) AssertCompanyAdminNotExists(t *testing.T, companyID, userID primitive.ObjectID) <span class="cov8" title="1">{
         db := database.NewCompanyAdminDB()
         exists, err := db.ExistsByCompanyAndUser(companyID, userID)
         require.NoError(t, err)
