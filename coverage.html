@@ -1,0 +1,408 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>growth-spark-ai-service: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">growth-spark-ai-service/main.go (0.0%)</option>
+				
+				<option value="file1">growth-spark-ai-service/test_helpers.go (84.5%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package main
+
+import (
+        "log"
+        "os"
+
+        "github.com/gin-gonic/gin"
+        "github.com/joho/godotenv"
+
+        "growth-spark-ai-service/database"
+        "growth-spark-ai-service/handlers"
+        "growth-spark-ai-service/middleware"
+)
+
+func main() <span class="cov0" title="0">{
+        // Load environment variables from .env file
+        if err := godotenv.Load(); err != nil </span><span class="cov0" title="0">{
+                log.Println("No .env file found, loading from system environment.")
+        }</span>
+
+        // Connect to MongoDB
+        <span class="cov0" title="0">if err := database.Connect(); err != nil </span><span class="cov0" title="0">{
+                log.Fatal("Failed to connect to database: ", err)
+        }</span>
+        <span class="cov0" title="0">defer func() </span><span class="cov0" title="0">{
+                if err := database.Disconnect(); err != nil </span><span class="cov0" title="0">{
+                        log.Println("Error disconnecting from database:", err)
+                }</span>
+        }()
+
+        // Set up the Gin router
+        <span class="cov0" title="0">router := gin.Default()
+
+        // API routes
+        api := router.Group("/api/v1")
+        </span><span class="cov0" title="0">{
+                // Public routes (no authentication required)
+                api.POST("/organizations", handlers.CreateOrganization)
+                api.POST("/auth/login", handlers.Login)
+                api.POST("/auth/register", handlers.Register)
+
+                // Protected routes (authentication required)
+                protected := api.Group("/")
+                protected.Use(middleware.AuthMiddleware())
+                </span><span class="cov0" title="0">{
+                        protected.GET("/profile", handlers.GetProfile)
+                        protected.GET("/permissions", middleware.GetUserPermissions)
+
+                        // Role management routes (admin only)
+                        roles := protected.Group("/roles")
+                        roles.Use(middleware.RequirePermission("roles:read"))
+                        </span><span class="cov0" title="0">{
+                                roles.GET("/", handlers.GetRoles)
+                                roles.GET("/:id", handlers.GetRole)
+                                roles.GET("/permissions", handlers.GetPermissions)
+                        }</span>
+
+                        // Role creation, update, delete (requires specific permissions)
+                        <span class="cov0" title="0">protected.POST("/roles", middleware.RequirePermission("roles:create"), handlers.CreateRole)
+                        protected.PUT("/roles/:id", middleware.RequirePermission("roles:update"), handlers.UpdateRole)
+                        protected.DELETE("/roles/:id", middleware.RequirePermission("roles:delete"), handlers.DeleteRole)
+                        protected.POST("/roles/assign", middleware.RequirePermission("users:update"), handlers.AssignRole)
+
+                        // Company management routes (super admin only)
+                        companies := protected.Group("/companies")
+                        </span><span class="cov0" title="0">{
+                                companies.POST("/", handlers.CreateCompany)
+                                companies.GET("/", handlers.GetAllCompanies)
+                                companies.GET("/:id", handlers.GetCompany)
+                                companies.PUT("/:id", handlers.UpdateCompany)
+                                companies.DELETE("/:id", handlers.DeleteCompany)
+                                
+                                // Company admin management routes (super admin only)
+                                companies.GET("/:id/admins", handlers.GetCompanyAdmins)
+                        }</span>
+
+                        // Company admin management routes (separate group to avoid path conflicts)
+                        <span class="cov0" title="0">companyAdmins := protected.Group("/company-admins")
+                        </span><span class="cov0" title="0">{
+                                companyAdmins.POST("/create", handlers.CreateCompanyAdmin)
+                                companyAdmins.PUT("/update/:adminId", handlers.UpdateCompanyAdmin)
+                                companyAdmins.DELETE("/delete/:adminId", handlers.RemoveCompanyAdmin)
+                        }</span>
+                }
+        }
+
+        // Run the server
+        <span class="cov0" title="0">port := os.Getenv("PORT")
+        if port == "" </span><span class="cov0" title="0">{
+                port = "8080"
+        }</span>
+        <span class="cov0" title="0">log.Printf("Server starting on port %s...", port)
+        if err := router.Run(":" + port); err != nil </span><span class="cov0" title="0">{
+                log.Fatal(err)
+        }</span>
+}
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package main
+
+import (
+        "context"
+        "fmt"
+        "testing"
+        "time"
+
+        "github.com/stretchr/testify/require"
+        "go.mongodb.org/mongo-driver/bson/primitive"
+        "go.mongodb.org/mongo-driver/mongo"
+        "go.mongodb.org/mongo-driver/mongo/options"
+
+        "growth-spark-ai-service/database"
+        "growth-spark-ai-service/models"
+)
+
+// TestHelper provides utilities for testing
+type TestHelper struct {
+        DB       *mongo.Database
+        Client   *mongo.Client
+        Cleanup  func()
+}
+
+// SetupTestEnvironment creates a test database and returns cleanup function
+func SetupTestEnvironment(t *testing.T) *TestHelper <span class="cov8" title="1">{
+        client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI("mongodb://localhost:27017"))
+        require.NoError(t, err)
+
+        testDB := client.Database("growth_spark_integration_test_" + primitive.NewObjectID().Hex())
+        
+        // Set the global DB for testing
+        originalDB := database.DB
+        database.DB = testDB
+
+        cleanup := func() </span><span class="cov8" title="1">{
+                // Drop test database
+                testDB.Drop(context.TODO())
+                client.Disconnect(context.TODO())
+                // Restore original DB
+                database.DB = originalDB
+        }</span>
+
+        <span class="cov8" title="1">return &amp;TestHelper{
+                DB:      testDB,
+                Client:  client,
+                Cleanup: cleanup,
+        }</span>
+}
+
+// CreateTestOrganization creates a test organization
+func (th *TestHelper) CreateTestOrganization(t *testing.T) models.Organization <span class="cov8" title="1">{
+        org := models.Organization{
+                ID:                 primitive.NewObjectID(),
+                OrgID:              "test-org-" + primitive.NewObjectID().Hex()[:8],
+                Name:               "Test Organization",
+                Description:        "Test organization for testing",
+                ContactPersonName:  "Test Contact",
+                ContactPersonPhone: "+1234567890",
+                ContactPersonEmail: "contact@testorg.com",
+                CreatedAt:          time.Now(),
+                UpdatedAt:          time.Now(),
+        }
+
+        collection := th.DB.Collection("organizations")
+        _, err := collection.InsertOne(context.TODO(), org)
+        require.NoError(t, err)
+
+        return org
+}</span>
+
+// CreateTestUser creates a test user
+func (th *TestHelper) CreateTestUser(t *testing.T, organizationID primitive.ObjectID, role string) models.User <span class="cov8" title="1">{
+        // Generate unique identifiers using test name and timestamp to avoid conflicts
+        testName := t.Name()
+        timestamp := time.Now().UnixNano()
+        uniqueID := primitive.NewObjectID().Hex()[:8]
+        
+        user := models.User{
+                ID:             primitive.NewObjectID(),
+                OrganizationID: organizationID,
+                Username:       fmt.Sprintf("testuser_%s_%d_%s", testName, timestamp, uniqueID),
+                FullName:       "Test User",
+                Email:          fmt.Sprintf("testuser_%s_%d_%s@example.com", testName, timestamp, uniqueID),
+                Password:       "$2a$10$hashedpassword", // Pre-hashed password
+                Role:           role,
+                CreatedAt:      time.Now(),
+                UpdatedAt:      time.Now(),
+        }
+
+        collection := th.DB.Collection("users")
+        _, err := collection.InsertOne(context.TODO(), user)
+        require.NoError(t, err)
+
+        return user
+}</span>
+
+// CreateTestCompany creates a test company
+func (th *TestHelper) CreateTestCompany(t *testing.T, organizationID primitive.ObjectID, createdBy primitive.ObjectID) models.Company <span class="cov8" title="1">{
+        company := models.Company{
+                ID:             primitive.NewObjectID(),
+                OrganizationID: organizationID,
+                Name:           "Test Company " + primitive.NewObjectID().Hex()[:8],
+                Description:    "Test company for testing",
+                Industry:       "Technology",
+                Email:          "company@example.com",
+                Phone:          "+1234567890",
+                Status:         "active",
+                CreatedAt:      time.Now(),
+                UpdatedAt:      time.Now(),
+                CreatedBy:      createdBy,
+                UpdatedBy:      createdBy,
+        }
+
+        collection := th.DB.Collection("companies")
+        _, err := collection.InsertOne(context.TODO(), company)
+        require.NoError(t, err)
+
+        return company
+}</span>
+
+// CreateTestCompanyAdmin creates a test company admin
+func (th *TestHelper) CreateTestCompanyAdmin(t *testing.T, companyID, userID, organizationID, createdBy primitive.ObjectID) models.CompanyAdmin <span class="cov8" title="1">{
+        companyAdmin := models.CompanyAdmin{
+                ID:             primitive.NewObjectID(),
+                CompanyID:      companyID,
+                UserID:         userID,
+                OrganizationID: organizationID,
+                Role:           "admin",
+                Permissions:    []string{"create_user", "edit_user", "delete_user"},
+                IsActive:       true,
+                Status:         "active",
+                AssignedAt:     time.Now(),
+                CreatedAt:      time.Now(),
+                UpdatedAt:      time.Now(),
+                CreatedBy:      createdBy,
+                UpdatedBy:      createdBy,
+        }
+
+        db := database.NewCompanyAdminDB()
+        err := db.Create(&amp;companyAdmin)
+        require.NoError(t, err)
+
+        return companyAdmin
+}</span>
+
+// CreateTestRole creates a test role
+func (th *TestHelper) CreateTestRole(t *testing.T, organizationID primitive.ObjectID, name string, permissions []string) models.Role <span class="cov0" title="0">{
+        role := models.Role{
+                ID:             primitive.NewObjectID(),
+                OrganizationID: organizationID,
+                Name:           name,
+                Description:    "Test role: " + name,
+                Permissions:    permissions,
+                IsSystemRole:   false,
+                CreatedAt:      time.Now(),
+                UpdatedAt:      time.Now(),
+        }
+
+        collection := th.DB.Collection("roles")
+        _, err := collection.InsertOne(context.TODO(), role)
+        require.NoError(t, err)
+
+        return role
+}</span>
+
+// AssertCompanyAdminExists verifies that a company admin exists with the given criteria
+func (th *TestHelper) AssertCompanyAdminExists(t *testing.T, companyID, userID primitive.ObjectID) <span class="cov8" title="1">{
+        db := database.NewCompanyAdminDB()
+        exists, err := db.ExistsByCompanyAndUser(companyID, userID)
+        require.NoError(t, err)
+        require.True(t, exists, "Company admin should exist")
+}</span>
+
+// AssertCompanyAdminNotExists verifies that a company admin does not exist with the given criteria
+func (th *TestHelper) AssertCompanyAdminNotExists(t *testing.T, companyID, userID primitive.ObjectID) <span class="cov0" title="0">{
+        db := database.NewCompanyAdminDB()
+        exists, err := db.ExistsByCompanyAndUser(companyID, userID)
+        require.NoError(t, err)
+        require.False(t, exists, "Company admin should not exist")
+}</span>
+
+// AssertCompanyAdminInactive verifies that a company admin is inactive (soft deleted)
+func (th *TestHelper) AssertCompanyAdminInactive(t *testing.T, adminID primitive.ObjectID) <span class="cov8" title="1">{
+        db := database.NewCompanyAdminDB()
+        admin, err := db.GetByID(adminID)
+        require.NoError(t, err)
+        require.False(t, admin.IsActive, "Company admin should be inactive")
+}</span>
+
+// GetCompanyAdminCount returns the count of company admins for a company
+func (th *TestHelper) GetCompanyAdminCount(t *testing.T, companyID primitive.ObjectID) int <span class="cov8" title="1">{
+        db := database.NewCompanyAdminDB()
+        admins, err := db.GetByCompany(companyID)
+        require.NoError(t, err)
+        return len(admins)
+}</span>
+
+// GetUserCompanyAdminCount returns the count of company admin assignments for a user
+func (th *TestHelper) GetUserCompanyAdminCount(t *testing.T, userID primitive.ObjectID) int <span class="cov8" title="1">{
+        db := database.NewCompanyAdminDB()
+        admins, err := db.GetByUser(userID)
+        require.NoError(t, err)
+        return len(admins)
+}</span>
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>

@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 
@@ -20,6 +21,12 @@ type CompanyAdminDB struct {
 
 // NewCompanyAdminDB creates a new CompanyAdminDB instance
 func NewCompanyAdminDB() *CompanyAdminDB {
+	if DB == nil {
+		return &CompanyAdminDB{
+			collection: nil,
+		}
+	}
+	
 	collection := DB.Collection("company_admins")
 	
 	// Create indexes for better performance
@@ -157,6 +164,10 @@ func (db *CompanyAdminDB) GetByUser(userID primitive.ObjectID) ([]models.Company
 
 // GetByOrganization retrieves all company admins for an organization
 func (db *CompanyAdminDB) GetByOrganization(organizationID primitive.ObjectID) ([]models.CompanyAdmin, error) {
+	if db.collection == nil {
+		return nil, fmt.Errorf("database connection is not available")
+	}
+	
 	cursor, err := db.collection.Find(context.TODO(), bson.M{
 		"organization_id": organizationID,
 		"is_active":       true,
@@ -176,6 +187,10 @@ func (db *CompanyAdminDB) GetByOrganization(organizationID primitive.ObjectID) (
 
 // GetWithUserDetails retrieves company admins with user details using aggregation
 func (db *CompanyAdminDB) GetWithUserDetails(companyID primitive.ObjectID) ([]models.CompanyAdminResponse, error) {
+	if db.collection == nil {
+		return nil, fmt.Errorf("database connection is not available")
+	}
+	
 	pipeline := []bson.M{
 		{
 			"$match": bson.M{
@@ -236,6 +251,25 @@ func (db *CompanyAdminDB) GetWithUserDetails(companyID primitive.ObjectID) ([]mo
 	// Transform results to CompanyAdminResponse
 	var companyAdmins []models.CompanyAdminResponse
 	for _, result := range results {
+		// Handle datetime conversion from primitive.DateTime
+		createdAt := time.Now()
+		if createdAtVal, ok := result["created_at"]; ok {
+			if dt, ok := createdAtVal.(primitive.DateTime); ok {
+				createdAt = dt.Time()
+			} else if t, ok := createdAtVal.(time.Time); ok {
+				createdAt = t
+			}
+		}
+		
+		updatedAt := time.Now()
+		if updatedAtVal, ok := result["updated_at"]; ok {
+			if dt, ok := updatedAtVal.(primitive.DateTime); ok {
+				updatedAt = dt.Time()
+			} else if t, ok := updatedAtVal.(time.Time); ok {
+				updatedAt = t
+			}
+		}
+		
 		companyAdmin := models.CompanyAdminResponse{
 			ID:          result["_id"].(primitive.ObjectID),
 			CompanyID:   result["company_id"].(primitive.ObjectID),
@@ -245,8 +279,8 @@ func (db *CompanyAdminDB) GetWithUserDetails(companyID primitive.ObjectID) ([]mo
 			UserEmail:   result["user_email"].(string),
 			Role:        result["role"].(string),
 			IsActive:    result["is_active"].(bool),
-			CreatedAt:   result["created_at"].(time.Time),
-			UpdatedAt:   result["updated_at"].(time.Time),
+			CreatedAt:   createdAt,
+			UpdatedAt:   updatedAt,
 		}
 		
 		// Handle permissions array (might be nil)
@@ -276,9 +310,13 @@ func (db *CompanyAdminDB) Update(id primitive.ObjectID, updates bson.M) error {
 
 // UpdateByCompanyAndUser updates a company admin record by company and user IDs
 func (db *CompanyAdminDB) UpdateByCompanyAndUser(companyID, userID primitive.ObjectID, updates bson.M) error {
+	if db.collection == nil {
+		return fmt.Errorf("database connection is not available")
+	}
+	
 	updates["updated_at"] = time.Now()
 	
-	_, err := db.collection.UpdateOne(
+	result, err := db.collection.UpdateOne(
 		context.TODO(),
 		bson.M{
 			"company_id": companyID,
@@ -286,7 +324,15 @@ func (db *CompanyAdminDB) UpdateByCompanyAndUser(companyID, userID primitive.Obj
 		},
 		bson.M{"$set": updates},
 	)
-	return err
+	if err != nil {
+		return err
+	}
+	
+	if result.MatchedCount == 0 {
+		return fmt.Errorf("no documents updated: company admin not found for company %s and user %s", companyID.Hex(), userID.Hex())
+	}
+	
+	return nil
 }
 
 // SoftDelete performs a soft delete by setting is_active to false
