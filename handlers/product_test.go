@@ -110,9 +110,7 @@ func TestCreateProduct(t *testing.T) {
 			Currency:    "USD",
 			SKU:         "TEST-001",
 			Status:      "active",
-			Stock:       100,
-			MinStock:    10,
-			MaxStock:    500,
+
 			Tags:        []string{"test", "electronics"},
 			Images:      []string{"image1.jpg", "image2.jpg"},
 			Specifications: map[string]string{
@@ -150,7 +148,7 @@ func TestCreateProduct(t *testing.T) {
 		assert.Equal(t, "electronics", createdProduct.Category)
 		assert.Equal(t, 99.99, createdProduct.Price)
 		assert.Equal(t, "USD", createdProduct.Currency)
-		assert.Equal(t, 100, createdProduct.Stock)
+
 		assert.True(t, createdProduct.IsActive)
 	})
 
@@ -611,8 +609,7 @@ func TestCreateProduct(t *testing.T) {
 			Price:     99.99,
 			Currency:  "USD",
 			SKU:       "INVALID-003",
-			MinStock:  100,
-			MaxStock:  50, // MaxStock less than MinStock
+
 		}
 
 		jsonBody, _ := json.Marshal(requestBody)
@@ -701,7 +698,7 @@ func TestGetProducts(t *testing.T) {
 			SKU:            "PROD-001",
 			Status:         "active",
 			IsActive:       true,
-			Stock:          100,
+
 			CreatedAt:      time.Now(),
 			UpdatedAt:      time.Now(),
 		}
@@ -716,7 +713,7 @@ func TestGetProducts(t *testing.T) {
 			SKU:            "PROD-002",
 			Status:         "inactive",
 			IsActive:       false,
-			Stock:          0,
+
 			CreatedAt:      time.Now(),
 			UpdatedAt:      time.Now(),
 		}

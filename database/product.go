@@ -177,9 +177,7 @@ func (db *ProductDB) GetWithCompanyDetails(companyID primitive.ObjectID, activeO
 			SKU:            result["sku"].(string),
 			Status:         result["status"].(string),
 			IsActive:       result["is_active"].(bool),
-			Stock:          int(result["stock"].(int32)),
-			MinStock:       int(result["min_stock"].(int32)),
-			MaxStock:       int(result["max_stock"].(int32)),
+
 			CreatedAt:      result["created_at"].(time.Time),
 			UpdatedAt:      result["updated_at"].(time.Time),
 			CreatedBy:      result["created_by"].(primitive.ObjectID),
@@ -207,9 +205,7 @@ func (db *ProductDB) GetWithCompanyDetails(companyID primitive.ObjectID, activeO
 			}
 		}
 		
-		// Calculate stock status
-		product.IsLowStock = product.Stock <= product.MinStock
-		product.IsOverStock = product.MaxStock > 0 && product.Stock >= product.MaxStock
+
 		
 		products = append(products, product)
 	}
