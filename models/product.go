@@ -19,9 +19,7 @@ type Product struct {
 	SKU            string             `bson:"sku" json:"sku" binding:"required"`
 	Status         string             `bson:"status" json:"status"` // active, inactive, discontinued
 	IsActive       bool               `bson:"is_active" json:"is_active"`
-	Stock          int                `bson:"stock" json:"stock" binding:"min=0"`
-	MinStock       int                `bson:"min_stock" json:"min_stock" binding:"min=0"`
-	MaxStock       int                `bson:"max_stock" json:"max_stock" binding:"min=0"`
+
 	Tags           []string           `bson:"tags" json:"tags"`
 	Images         []string           `bson:"images" json:"images"`
 	Specifications map[string]string  `bson:"specifications" json:"specifications"`
@@ -73,16 +71,6 @@ func (p *Product) IsValidCurrency() bool {
 	return false
 }
 
-// IsLowStock checks if the product stock is below minimum threshold
-func (p *Product) IsLowStock() bool {
-	return p.Stock <= p.MinStock
-}
-
-// IsOverStock checks if the product stock is above maximum threshold
-func (p *Product) IsOverStock() bool {
-	return p.MaxStock > 0 && p.Stock >= p.MaxStock
-}
-
 // CreateProductRequest represents the request payload for creating a new product
 type CreateProductRequest struct {
 	CompanyID      string            `json:"company_id" binding:"required"`
@@ -93,9 +81,7 @@ type CreateProductRequest struct {
 	Currency       string            `json:"currency" binding:"required"`
 	SKU            string            `json:"sku" binding:"required"`
 	Status         string            `json:"status"`
-	Stock          int               `json:"stock" binding:"min=0"`
-	MinStock       int               `json:"min_stock" binding:"min=0"`
-	MaxStock       int               `json:"max_stock" binding:"min=0"`
+
 	Tags           []string          `json:"tags"`
 	Images         []string          `json:"images"`
 	Specifications map[string]string `json:"specifications"`
@@ -111,9 +97,7 @@ type UpdateProductRequest struct {
 	SKU            string            `json:"sku"`
 	Status         string            `json:"status"`
 	IsActive       *bool             `json:"is_active"`
-	Stock          *int              `json:"stock" binding:"omitempty,min=0"`
-	MinStock       *int              `json:"min_stock" binding:"omitempty,min=0"`
-	MaxStock       *int              `json:"max_stock" binding:"omitempty,min=0"`
+
 	Tags           []string          `json:"tags"`
 	Images         []string          `json:"images"`
 	Specifications map[string]string `json:"specifications"`
@@ -133,14 +117,11 @@ type ProductResponse struct {
 	SKU            string             `json:"sku"`
 	Status         string             `json:"status"`
 	IsActive       bool               `json:"is_active"`
-	Stock          int                `json:"stock"`
-	MinStock       int                `json:"min_stock"`
-	MaxStock       int                `json:"max_stock"`
+
 	Tags           []string           `json:"tags"`
 	Images         []string           `json:"images"`
 	Specifications map[string]string  `json:"specifications"`
-	IsLowStock     bool               `json:"is_low_stock"`
-	IsOverStock    bool               `json:"is_over_stock"`
+
 	CreatedAt      time.Time          `json:"created_at"`
 	UpdatedAt      time.Time          `json:"updated_at"`
 	CreatedBy      primitive.ObjectID `json:"created_by"`

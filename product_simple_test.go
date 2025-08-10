@@ -111,9 +111,7 @@ func TestProductCreationSimple(t *testing.T) {
 			Currency:    "USD",
 			SKU:         "TEST-001",
 			Status:      "active",
-			Stock:       100,
-			MinStock:    10,
-			MaxStock:    500,
+
 			Tags:        []string{"test", "electronics"},
 			Images:      []string{"image1.jpg", "image2.jpg"},
 			Specifications: map[string]string{
@@ -151,7 +149,7 @@ func TestProductCreationSimple(t *testing.T) {
 		assert.Equal(t, "electronics", createdProduct.Category)
 		assert.Equal(t, 99.99, createdProduct.Price)
 		assert.Equal(t, "USD", createdProduct.Currency)
-		assert.Equal(t, 100, createdProduct.Stock)
+
 		assert.True(t, createdProduct.IsActive)
 	})
 

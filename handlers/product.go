@@ -102,9 +102,7 @@ func CreateProduct(c *gin.Context) {
 		Currency:       req.Currency,
 		SKU:            req.SKU,
 		Status:         req.Status,
-		Stock:          req.Stock,
-		MinStock:       req.MinStock,
-		MaxStock:       req.MaxStock,
+
 		Tags:           req.Tags,
 		Images:         req.Images,
 		Specifications: req.Specifications,
@@ -133,16 +131,7 @@ func CreateProduct(c *gin.Context) {
 		return
 	}
 
-	// Validate stock constraints
-	if product.MaxStock > 0 && product.MinStock >= product.MaxStock {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Minimum stock must be less than maximum stock"})
-		return
-	}
 
-	if product.Stock < 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Stock cannot be negative"})
-		return
-	}
 
 	// Create the product
 	err = productDB.Create(product)
@@ -408,15 +397,7 @@ func UpdateProduct(c *gin.Context) {
 	if req.IsActive != nil {
 		updates["is_active"] = *req.IsActive
 	}
-	if req.Stock != nil {
-		updates["stock"] = *req.Stock
-	}
-	if req.MinStock != nil {
-		updates["min_stock"] = *req.MinStock
-	}
-	if req.MaxStock != nil {
-		updates["max_stock"] = *req.MaxStock
-	}
+
 	if req.Tags != nil {
 		updates["tags"] = req.Tags
 	}
@@ -427,13 +408,7 @@ func UpdateProduct(c *gin.Context) {
 		updates["specifications"] = req.Specifications
 	}
 
-	// Validate stock constraints if being updated
-	if req.MinStock != nil && req.MaxStock != nil {
-		if *req.MaxStock > 0 && *req.MinStock >= *req.MaxStock {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Minimum stock must be less than maximum stock"})
-			return
-		}
-	}
+
 
 	if len(updates) == 0 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "No fields to update"})
